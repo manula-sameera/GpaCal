@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>GPA Calculator</title>
+  <!-- Include Bootstrap CSS -->
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    /* Add some custom CSS styles */
+    #summary-container {
+      float: right;
+      width: 300px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      margin-top: 20px;
+    }
+
+    table th,
+    table td {
+      padding: 0.2rem!important;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1 class="mt-4">GPA Calculator</h1>
+
+    <!-- Summary container on the right side -->
+    <div id="summary-container" class="mb-4">
+      <h2>Summary</h2>
+      <div id="semester-summary"></div>
+    </div>
+
+    <div class="form-group">
+      <label for="degree-program">Select Degree Program:</label>
+      <select id="degree-program" class="form-control"></select>
+    </div>
+
+    <div class="form-group">
+      <label for="semester">Select Semester:</label>
+      <select id="semester" class="form-control"></select>
+    </div>
+
+    <h2>Subjects and Grades</h2>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Subject</th>
+          <th>Credits</th>
+          <th>Grade</th>
+        </tr>
+      </thead>
+      <tbody id="subject-list"></tbody>
+    </table>
+
+    <h2>SGPA</h2>
+    <p id="sgpa">0.0</p>
+
+    <h2>FGPA</h2>
+    <p id="fgpa">0.0</p>
+
+    <h2>Grades and Grade Points</h2>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Grade</th>
+          <th>Grade Point</th>
+        </tr>
+      </thead>
+      <tbody id="grade-table"></tbody>
+    </table>
+  </div>
+
+  <!-- Include Bootstrap JS if needed -->
+  <!-- <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script> -->
+  <!-- <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script> -->
+  <!-- <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script> -->
+
+  <script>
+    const subjectsAndCredits = {
+        "Computer Science": {
+          "Semester 1": [
+            { subject: "Mathematics", credits: 3 },
+            { subject: "Computer Programming", credits: 4 },
+            // Add more subjects and credits as needed
+          ],
+          "Semester 2": [
+            { subject: "Data Structures", credits: 3 },
+            { subject: "Database Management", credits: 4 },
+            // Add more subjects and credits as needed
+          ],
+        },
+        "Electrical Engineering": {
+          "Semester 1": [
+            { subject: "Circuit Theory", credits: 3 },
+            { subject: "Electromagnetics", credits: 4 },
+            // Add more subjects and credits as needed
+          ],
+          "Semester 2": [
+            { subject: "Digital Signal Processing", credits: 3 },
+            { subject: "Power Systems", credits: 4 },
+            // Add more subjects and credits as needed
+          ],
+        },
+        "B.Tech. in Software Technology": {
+          "Semester 1": [
+            { subject: "Mathematics for ICT I", credits: 3 },
+            { subject: "Computer Programming", credits: 4 },
+            { subject: "Software Development Practices", credits: 4 },
+            { subject: "Digital Electronics", credits: 3 },
+            { subject: "Data Communication and Networks", credits: 3 },
+            { subject: "Database Design", credits: 3 },
+            { subject: "Internet Technologies", credits: 4 },
+            { subject: "Communication Skills in English I", credits: 3 },
+          ],
+          "Semester 2": [
+            { subject: "Operating Systems", credits: 2 },
+            { subject: "Mathematics for ICT II", credits: 3 },
+            { subject: "Computer Architecture", credits: 3 },
+            { subject: "Data Structures and Algorithms", credits: 4 },
+            { subject: "Database Systems and Programming", credits: 6 },
+            { subject: "Visual Programming I", credits: 4 },
+            { subject: "Web Programming", credits: 6 },
+            { subject: "Computer Networks", credits: 3 },
+            { subject: "Communication Skills in English II", credits: 3 },
+          ],
+          "Semester 3": [
+            { subject: "Web Technology and Applications", credits: 4 },
+            { subject: "Platform Independent Programming", credits: 4 },
+            { subject: "Visual Programming II", credits: 6 },
+            { subject: "Software Architectures and Design", credits: 6 },
+            { subject: "Software Deployment and Evolution", credits: 4 },
+            { subject: "Database Implementation", credits: 4 },
+            {
+              subject: "Entrepreneurship Development and Management",
+              credits: 4,
+            },
+            { subject: "Psychology", credits: 2 },
+            { subject: "Soft Skills and Personal Development", credits: 2 },
+          ],
+          "Semester 4": [
+            { subject: "Mobile Application Development", credits: 4 },
+            { subject: "Cloud-Based Application Development", credits: 4 },
+            { subject: "Human-Computer Interaction", credits: 2 },
+            { subject: "Real-Time Programming", credits: 4 },
+            { subject: "Software Testing and Reliability", credits: 6 },
+            {
+              subject: "Enterprise System Technologies and Architectures",
+              credits: 3,
+            },
+            { subject: "UX Engineering", credits: 2 },
+            { subject: "Research Methodology", credits: 3 },
+            { subject: "Meditation & Stress Management", credits: 2 },
+            { subject: "Energy Management in IT Environment", credits: 2 },
+          ],
+          "Semester 5": [
+            { subject: "Work Based / Industrial Training", credits: 14 },
+          ],
+          "Semester 6": [
+            {
+              subject: "Professional Issues in Information Technology",
+              credits: 4,
+            },
+            { subject: "Enterprise System Design", credits: 4 },
+            { subject: "Enterprise Resource Planning Systems", credits: 4 },
+            { subject: "Intelligent Systems", credits: 4 },
+            {
+              subject: "Information Systems Security and Practices",
+              credits: 4,
+            },
+            { subject: "Software Project Management", credits: 4 },
+            { subject: "Enterprise Application Development", credits: 4 },
+            { subject: "Photography", credits: 2 },
+            { subject: "Occupational Health and Safety", credits: 2 },
+            { subject: "Game Development and Programming", credits: 4 },
+            { subject: "Digital Marketing", credits: 3 },
+            {
+              subject: "Final Year Project (Software Development Project)",
+              credits: 12,
+            },
+          ],
+        },
+      };
+
+      const gradeInfo = {
+        "A+": 4.0,
+        "A": 4.0,
+        "A-": 3.7,
+        "B+": 3.3,
+        "B": 3.0,
+        "B-": 2.7,
+        "C+": 2.3,
+        "C": 2.0,
+        "C-": 1.7,
+        "D": 1.0,
+        "F": 0.0,
+      };
+
+    const semesterGPAs = [];
+
+    function populateDegreePrograms() {
+      // Populate the degree program select options
+      const degreeProgramSelect = document.getElementById("degree-program");
+      for (const degreeProgram in subjectsAndCredits) {
+        const option = document.createElement("option");
+        option.value = degreeProgram;
+        option.textContent = degreeProgram;
+        degreeProgramSelect.appendChild(option);
+      }
+    }
+
+    function populateSemesters() {
+      // Populate the semester select options based on the selected degree program
+      const degreeProgram = document.getElementById("degree-program").value;
+      const semesterSelect = document.getElementById("semester");
+      semesterSelect.innerHTML = "";
+
+      for (const semester in subjectsAndCredits[degreeProgram]) {
+        const option = document.createElement("option");
+        option.value = semester;
+        option.textContent = semester;
+        semesterSelect.appendChild(option);
+      }
+    }
+
+    function populateGradeTable() {
+      // Populate the grade table with grade information
+      const gradeTable = document.getElementById("grade-table");
+      gradeTable.innerHTML = "";
+
+      for (const grade in gradeInfo) {
+        const row = document.createElement("tr");
+        const gradeCell = document.createElement("td");
+        const gradePointCell = document.createElement("td");
+
+        gradeCell.textContent = grade;
+        gradePointCell.textContent = gradeInfo[grade].toFixed(1);
+
+        row.appendChild(gradeCell);
+        row.appendChild(gradePointCell);
+
+        gradeTable.appendChild(row);
+      }
+    }
+
+    function updateSubjectList() {
+      // Update the list of subjects and credits based on the selected degree program and semester
+      const program = document.getElementById("degree-program").value;
+      const semester = document.getElementById("semester").value;
+      const subjectList = subjectsAndCredits[program][semester];
+      const tbody = document.getElementById("subject-list");
+
+      tbody.innerHTML = "";
+
+      for (const subjectData of subjectList) {
+        const row = document.createElement("tr");
+        const subjectCell = document.createElement("td");
+        subjectCell.textContent = subjectData.subject;
+        const creditsCell = document.createElement("td");
+        creditsCell.textContent = subjectData.credits;
+        const gradeCell = document.createElement("td");
+        const gradeSelect = document.createElement("select");
+        gradeSelect.name = `grade-${subjectData.subject}`;
+        gradeSelect.classList.add("grade-select");
+        gradeSelect.addEventListener("change", calculateSGPA);
+
+        const gradeOptions = [
+          "A+", "A", "A-", "B+", "B", "B-", "C+", "C", "C-", "D", "F"
+        ];
+
+        for (const gradeOption of gradeOptions) {
+          const option = document.createElement("option");
+          option.value = gradeOption;
+          option.textContent = gradeOption;
+          gradeSelect.appendChild(option);
+        }
+
+        gradeCell.appendChild(gradeSelect);
+
+        row.appendChild(subjectCell);
+        row.appendChild(creditsCell);
+        row.appendChild(gradeCell);
+        tbody.appendChild(row);
+      }
+    }
+
+    function calculateSGPA() {
+      // Calculate and update the SGPA and FGPA based on selected grades
+      const gradeSelects = document.querySelectorAll(".grade-select");
+      let totalCredits = 0;
+      let totalGradePoints = 0;
+
+      for (const gradeSelect of gradeSelects) {
+        const selectedGrade = gradeSelect.value;
+        const creditsCell = gradeSelect.parentElement.previousElementSibling;
+        const credits = parseInt(creditsCell.textContent, 10);
+        const gradePoint = gradeInfo[selectedGrade];
+
+        if (!isNaN(credits) && !isNaN(gradePoint)) {
+          totalCredits += credits;
+          totalGradePoints += credits * gradePoint;
+        }
+      }
+
+      const sgpa =
+        totalCredits === 0 ? 0.0 : (totalGradePoints / totalCredits).toFixed(2);
+      document.getElementById("sgpa").textContent = sgpa;
+
+      // Update the semester SGPA for the current semester
+      const semesterIndex = document.getElementById("semester").selectedIndex;
+      semesterGPAs[semesterIndex] = parseFloat(sgpa);
+
+      // Calculate and display FGPA as the average of all semester SGPA values
+      const totalSGPA = semesterGPAs.reduce((sum, sgpa) => sum + sgpa, 0);
+      const fgpa =
+        semesterGPAs.length === 0 ? 0.0 : (totalSGPA / semesterGPAs.length).toFixed(2);
+      document.getElementById("fgpa").textContent = fgpa;
+
+      // Update the semester summary
+      updateSemesterSummary();
+    }
+
+    function updateSemesterSummary() {
+      // Update the semester summary in the summary container
+      const semesterSummary = document.getElementById("semester-summary");
+      semesterSummary.innerHTML = "";
+
+      for (let i = 0; i < semesterGPAs.length; i++) {
+        const semesterNumber = i + 1;
+        const semesterInfo = document.createElement("div");
+        semesterInfo.textContent = `Semester ${semesterNumber} SGPA: ${semesterGPAs[i]}`;
+
+        // Add a button to remove the semester
+        const removeButton = document.createElement("button");
+        removeButton.textContent = "Remove Semester";
+        removeButton.addEventListener("click", () => removeSemester(i));
+
+        semesterInfo.appendChild(removeButton);
+        semesterSummary.appendChild(semesterInfo);
+      }
+    }
+
+    function removeSemester(semesterIndex) {
+      // Remove a semester from the semesterGPAs array and update the summary
+      semesterGPAs.splice(semesterIndex, 1);
+      updateSemesterSummary();
+      calculateFGPA();
+    }
+
+    function calculateFGPA() {
+      // Calculate and update the FGPA based on semester SGPA values
+      const totalSGPA = semesterGPAs.reduce((sum, sgpa) => sum + sgpa, 0);
+      const fgpa =
+        semesterGPAs.length === 0 ? 0.0 : (totalSGPA / semesterGPAs.length).toFixed(2);
+      document.getElementById("fgpa").textContent = fgpa;
+    }
+
+    // Initial population and event listeners
+    populateDegreePrograms();
+    populateGradeTable();
+
+    document.getElementById("degree-program").addEventListener("change", populateSemesters);
+    document.getElementById("semester").addEventListener("change", updateSubjectList);
+
+    // Event listener for grade changes
+    const gradeSelects = document.querySelectorAll(".grade-select");
+    for (const gradeSelect of gradeSelects) {
+      gradeSelect.addEventListener("change", calculateSGPA);
+    }
+
+    populateSemesters(); // Initial population of semesters
+  </script>
+</body>
+
+</html>
