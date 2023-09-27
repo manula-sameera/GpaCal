@@ -529,7 +529,10 @@
 
       document
         .getElementById("degree-program")
-        .addEventListener("change", populateSemesters);
+        .addEventListener("change", function() {
+      populateSemesters();
+      updateSubjectList();
+    });
       document
         .getElementById("semester")
         .addEventListener("change", updateSubjectList);
