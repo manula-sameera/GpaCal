@@ -1,7 +1,10 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
     <title>GPA Calculator</title>
     <!-- Include Bootstrap CSS -->
     <link
@@ -23,19 +26,23 @@
         padding: 0.2rem !important;
         font-size: 0.9rem;
       }
+      .sigma {
+            font-size: 24px; /* Adjust the font size as needed */
+        }
+        .fraction-line {
+            display: block;
+        }
     </style>
   </head>
 
   <body>
-   
-      <h1 class="mt-4">GPA Calculator</h1>
-       <div class="container">
+    <h1 class="mt-4">GPA Calculator</h1>
+    <div class="container">
       <!-- Summary container on the right side -->
       <div id="summary-container" class="mb-4">
         <h2>Summary</h2>
         <div id="semester-summary"></div>
       </div>
-      
 
       <div class="form-group">
         <label for="degree-program">Select Degree Program:</label>
@@ -70,12 +77,57 @@
         <thead>
           <tr>
             <th>Grade</th>
+            <th>Marks Range</th>
             <th>Grade Point</th>
           </tr>
         </thead>
+        
         <tbody id="grade-table"></tbody>
       </table>
+      <h2>Calculation of Semester Grade Point Average (SGPA)</h2>
+        <p>The calculation of the Semester Grade Point Average will be based on the Grade Points earned for all modules registered in a semester (except those awarded with academic concession) weighted according to the number of credits. The SGPA is rounded to the nearest second decimal place. The SGPA is reported on transcripts and Statement of Results that may be issued for each semester.</p>
+        <p>The formula for calculating SGPA is given below:</p>
+        
+        <math display="block">
+            <mrow>
+              <mtext>Semester GPA (SGPA) = </mtext>
+              <mfrac>
+                <mrow>
+                  <mo>∑</mo>
+                  <mo>(</mo>
+                  <mtext>Number of Credits for a semester module</mtext>
+                  <mo>×</mo>
+                  <mtext>Grade point obtained for the module</mtext>
+                  <mo>)</mo>
+                </mrow>
+                <mrow>
+                  <mtext>Total number of credits for the Semester</mtext>
+                </mrow>
+              </mfrac>
+            </mrow>
+          </math>
+    <br/>
+    <h2>Final Grade Point Average (FGPA)</h2>
+    <p>The Final Grade Point Average is the absolute academic standing of the student calculated on the basis of SGPA. The FGPA will be calculated using the following formula.</p>
+    <math display="block">
+        <mrow>
+          <mtext>Final GPA (FGPA) = </mtext>
+          <mfrac>
+            <mrow>
+              <mo>∑</mo>
+              <mo>(</mo>
+              <mtext>Semester GPA</mtext>
+              <mo>)</mo>
+            </mrow>
+            <mrow>
+              <mtext>Number of Semesters</mtext>
+            </mrow>
+          </mfrac>
+        </mrow>
+      </math>
+      <br/>
     </div>
+    
     <footer>
       <div class="container">
         <div class="row">
@@ -92,7 +144,7 @@
     <!-- <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script> -->
 
     <script>
-      const subjectsAndCredits = {
+        const subjectsAndCredits = {
         "B.Tech. in Software Technology": {
           "Semester 1": [
             { subject: "Mathematics for ICT I", credits: 3 },
@@ -334,19 +386,19 @@
       };
 
       const gradeInfo = {
-        "A+": 4.0,
-        A: 4.0,
-        "A-": 3.7,
-        "B+": 3.3,
-        B: 3.0,
-        "B-": 2.7,
-        "C+": 2.3,
-        C: 2.0,
-        "C-": 1.7,
-       "D+": 1.3,
-        D: 1.0,
-        E:0.0,
-        F: 0.0,
+        "A+": { gradePoint: 4.0, marksRange: "85-100" },
+        A: { gradePoint: 4.0, marksRange: "75-84" },
+        "A-": { gradePoint: 3.7, marksRange: "70-74" },
+        "B+": { gradePoint: 3.3, marksRange: "65-69" },
+        B: { gradePoint: 3.0, marksRange: "60-64" },
+        "B-": { gradePoint: 2.7, marksRange: "55-59" },
+        "C+": { gradePoint: 2.3, marksRange: "50-54" },
+        C: { gradePoint: 2.0, marksRange: "45-49" },
+        "C-": { gradePoint: 1.7, marksRange: "40-44" },
+        "D+": { gradePoint: 1.3, marksRange: "35-39" },
+        D: { gradePoint: 1.0, marksRange: "30-34" },
+        E: { gradePoint: 0.0, marksRange: "1-29" },
+        F: { gradePoint: 0.0, marksRange: "0" },
       };
 
       const semesterGPAs = [];
@@ -384,12 +436,15 @@
         for (const grade in gradeInfo) {
           const row = document.createElement("tr");
           const gradeCell = document.createElement("td");
+          const marksRangeCell = document.createElement("td");
           const gradePointCell = document.createElement("td");
 
           gradeCell.textContent = grade;
-          gradePointCell.textContent = gradeInfo[grade].toFixed(1);
+          marksRangeCell.textContent = gradeInfo[grade].marksRange;
+          gradePointCell.textContent = gradeInfo[grade].gradePoint.toFixed(1);
 
           row.appendChild(gradeCell);
+          row.appendChild(marksRangeCell);
           row.appendChild(gradePointCell);
 
           gradeTable.appendChild(row);
@@ -417,27 +472,12 @@
           gradeSelect.classList.add("grade-select");
           gradeSelect.addEventListener("change", calculateSGPA);
 
-          // const gradeOptions = [
-          //   "A+",
-          //   "A",
-          //   "A-",
-          //   "B+",
-          //   "B",
-          //   "B-",
-          //   "C+",
-          //   "C",
-          //   "C-",
-          //   "D",
-          //   "F",
-          // ];
-
-          // Generate grade options dynamically
-    for (const grade in gradeInfo) {
-      const option = document.createElement("option");
-      option.value = grade;
-      option.textContent = grade;
-      gradeSelect.appendChild(option);
-    }
+          for (const grade in gradeInfo) {
+            const option = document.createElement("option");
+            option.value = grade;
+            option.textContent = grade;
+            gradeSelect.appendChild(option);
+          }
 
           gradeCell.appendChild(gradeSelect);
 
@@ -458,18 +498,17 @@
           const selectedGrade = gradeSelect.value;
           const creditsCell = gradeSelect.parentElement.previousElementSibling;
           const credits = parseInt(creditsCell.textContent, 10);
-          const gradePoint = gradeInfo[selectedGrade];
+          const gradeInfoObj = gradeInfo[selectedGrade];
 
-          if (!isNaN(credits) && !isNaN(gradePoint)) {
+          if (!isNaN(credits) && gradeInfoObj) {
+            const gradePoint = gradeInfoObj.gradePoint;
             totalCredits += credits;
             totalGradePoints += credits * gradePoint;
           }
         }
 
         const sgpa =
-          totalCredits === 0
-            ? 0.0
-            : (totalGradePoints / totalCredits).toFixed(2);
+          totalCredits === 0 ? 0.0 : (totalGradePoints / totalCredits).toFixed(2);
         document.getElementById("sgpa").textContent = sgpa;
 
         // Update the semester SGPA for the current semester
@@ -528,13 +567,15 @@
       // Initial population and event listeners
       populateDegreePrograms();
       populateGradeTable();
+      populateSemesters(); // Initial population of semesters
+      updateSubjectList();
 
       document
         .getElementById("degree-program")
-        .addEventListener("change", function() {
-      populateSemesters();
-      updateSubjectList();
-    });
+        .addEventListener("change", function () {
+          populateSemesters();
+          updateSubjectList();
+        });
       document
         .getElementById("semester")
         .addEventListener("change", updateSubjectList);
@@ -544,9 +585,6 @@
       for (const gradeSelect of gradeSelects) {
         gradeSelect.addEventListener("change", calculateSGPA);
       }
-
-      populateSemesters(); // Initial population of semesters
-      updateSubjectList();
     </script>
   </body>
 </html>
