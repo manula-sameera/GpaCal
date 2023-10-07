@@ -16,6 +16,12 @@ This web application allows users to calculate their Semester Grade Point Averag
 
 ## How to Use
 
+### Method 1
+
+1. go to (https://manula-sameera.github.io/GpaCal/)
+
+### Method 2
+
 1. Clone the repository to your local machine.
 
 2. Open the `index.html` file in a web browser.
