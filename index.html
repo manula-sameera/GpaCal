@@ -1,10 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-    />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>GPA Calculator</title>
     <!-- Include Bootstrap CSS -->
     <link
@@ -27,23 +25,77 @@
         font-size: 0.9rem;
       }
       .sigma {
-            font-size: 24px; /* Adjust the font size as needed */
-        }
-        .fraction-line {
-            display: block;
-        }
+        font-size: 24px; /* Adjust the font size as needed */
+      }
+      .fraction-line {
+        display: block;
+      }
     </style>
   </head>
 
-  <body> 
+  <body>
     <div class="container">
       <h1 class="mt-4">GPA Calculator</h1>
       <!-- Summary container on the right side -->
       <div id="summary-container" class="mb-4">
         <h2>Summary</h2>
         <div id="semester-summary"></div>
+        <!-- Add a button for downloading data -->
+        <button
+          id="download-data"
+          onclick="convertJSONtoCSV(data);"
+          class="btn btn-primary mt-3"
+        >
+          Download Data
+        </button>
       </div>
+      <script>
+        function convertJSONtoCSV(jsonData) {
+          let csvContent = "data:text/csv;charset=utf-8,";
 
+          // Header
+          csvContent += "Semester,SGPA,Subject,Grade\n";
+
+          // Initialize variables to track semester and SGPA
+          let currentSemester = "";
+          let currentSGPA = "";
+
+          // Iterate through semesters
+          Object.keys(jsonData).forEach((semester) => {
+            if (semester !== "degreeProgramName" && semester !== "FGPA") {
+              // Get SGPA for the semester
+              const sgpa = jsonData[semester]["SGPA"];
+
+              // Iterate through subjects and grades
+              jsonData[semester]["Grades"].forEach((course, index) => {
+                // Only include semester and SGPA when processing the first subject of each semester
+                if (index === 0 || semester !== currentSemester) {
+                  csvContent += `${semester},${sgpa},${course.subject},${course.Grade}\n`;
+                  currentSemester = semester;
+                  currentSGPA = sgpa;
+                } else {
+                  // For other subjects in the same semester, merge cells for semester and SGPA
+                  csvContent += `,,${course.subject},${course.Grade}\n`;
+                }
+              });
+            }
+          });
+
+          // Add FGPA
+          const fgpa = jsonData["FGPA"];
+          csvContent += `FGPA,,${fgpa}\n`;
+
+          // Create a download link
+          const encodedUri = encodeURI(csvContent);
+          const link = document.createElement("a");
+          link.setAttribute("href", encodedUri);
+          link.setAttribute("download", "grades.csv");
+          document.body.appendChild(link);
+
+          // Trigger the download
+          link.click();
+        }
+      </script>
       <div class="form-group">
         <label for="degree-program">Select Degree Program:</label>
         <select id="degree-program" class="form-control"></select>
@@ -81,35 +133,46 @@
             <th>Grade Point</th>
           </tr>
         </thead>
-        
+
         <tbody id="grade-table"></tbody>
       </table>
       <h2>Calculation of Semester Grade Point Average (SGPA)</h2>
-        <p>The calculation of the Semester Grade Point Average will be based on the Grade Points earned for all modules registered in a semester (except those awarded with academic concession) weighted according to the number of credits. The SGPA is rounded to the nearest second decimal place. The SGPA is reported on transcripts and Statement of Results that may be issued for each semester.</p>
-        <p>The formula for calculating SGPA is given below:</p>
-        
-        <math display="block">
+      <p>
+        The calculation of the Semester Grade Point Average will be based on the
+        Grade Points earned for all modules registered in a semester (except
+        those awarded with academic concession) weighted according to the number
+        of credits. The SGPA is rounded to the nearest second decimal place. The
+        SGPA is reported on transcripts and Statement of Results that may be
+        issued for each semester.
+      </p>
+      <p>The formula for calculating SGPA is given below:</p>
+
+      <math display="block">
+        <mrow>
+          <mtext>Semester GPA (SGPA) = </mtext>
+          <mfrac>
             <mrow>
-              <mtext>Semester GPA (SGPA) = </mtext>
-              <mfrac>
-                <mrow>
-                  <mo>∑</mo>
-                  <mo>(</mo>
-                  <mtext>Number of Credits for a semester module</mtext>
-                  <mo>×</mo>
-                  <mtext>Grade point obtained for the module</mtext>
-                  <mo>)</mo>
-                </mrow>
-                <mrow>
-                  <mtext>Total number of credits for the Semester</mtext>
-                </mrow>
-              </mfrac>
+              <mo>∑</mo>
+              <mo>(</mo>
+              <mtext>Number of Credits for a semester module</mtext>
+              <mo>×</mo>
+              <mtext>Grade point obtained for the module</mtext>
+              <mo>)</mo>
             </mrow>
-          </math>
-    <br/>
-    <h2>Final Grade Point Average (FGPA)</h2>
-    <p>The Final Grade Point Average is the absolute academic standing of the student calculated on the basis of SGPA. The FGPA will be calculated using the following formula.</p>
-    <math display="block">
+            <mrow>
+              <mtext>Total number of credits for the Semester</mtext>
+            </mrow>
+          </mfrac>
+        </mrow>
+      </math>
+      <br />
+      <h2>Final Grade Point Average (FGPA)</h2>
+      <p>
+        The Final Grade Point Average is the absolute academic standing of the
+        student calculated on the basis of SGPA. The FGPA will be calculated
+        using the following formula.
+      </p>
+      <math display="block">
         <mrow>
           <mtext>Final GPA (FGPA) = </mtext>
           <mfrac>
@@ -125,52 +188,54 @@
           </mfrac>
         </mrow>
       </math>
-      <br/>
+      <br />
       <h4>Final Grade Point Average (FGPA) Results</h4>
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Range</th>
-                    <th>FGPA</th>
-                    <th>Final Results</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>3.7 or Above</td>
-                    <td>3.7+</td>
-                    <td>First Class</td>
-                </tr>
-                <tr>
-                    <td>3.30 - 3.69</td>
-                    <td>3.30 - 3.69</td>
-                    <td>Second Upper</td>
-                </tr>
-                <tr>
-                    <td>2.70 - 3.29</td>
-                    <td>2.70 - 3.29</td>
-                    <td>Second Lower</td>
-                </tr>
-                <tr>
-                    <td>2.00 - 2.69</td>
-                    <td>2.00 - 2.69</td>
-                    <td>Ordinary Pass</td>
-                </tr>
-                <tr>
-                    <td>Below 2.00</td>
-                    <td>Below 2.00</td>
-                    <td>Incomplete</td>
-                </tr>
-            </tbody>
-        </table>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Range</th>
+            <th>FGPA</th>
+            <th>Final Results</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>3.7 or Above</td>
+            <td>3.7+</td>
+            <td>First Class</td>
+          </tr>
+          <tr>
+            <td>3.30 - 3.69</td>
+            <td>3.30 - 3.69</td>
+            <td>Second Upper</td>
+          </tr>
+          <tr>
+            <td>2.70 - 3.29</td>
+            <td>2.70 - 3.29</td>
+            <td>Second Lower</td>
+          </tr>
+          <tr>
+            <td>2.00 - 2.69</td>
+            <td>2.00 - 2.69</td>
+            <td>Ordinary Pass</td>
+          </tr>
+          <tr>
+            <td>Below 2.00</td>
+            <td>Below 2.00</td>
+            <td>Incomplete</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
-    
+
     <footer>
       <div class="container">
         <div class="row">
           <div class="col-md-12">
             <p class="text-center">&copy; Manula Sameera 2023</p>
-            <p class="text-center"><a href="https://github.com/manula-sameera/GpaCal">Github</a></p>
+            <p class="text-center">
+              <a href="https://github.com/manula-sameera/GpaCal">Github</a>
+            </p>
           </div>
         </div>
       </div>
@@ -182,7 +247,7 @@
     <!-- <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script> -->
 
     <script>
-        const subjectsAndCredits = {
+      const subjectsAndCredits = {
         "B.Tech. in Software Technology": {
           "Semester 1": [
             { subject: "Mathematics for ICT I", credits: 3 },
@@ -298,7 +363,7 @@
               subject: "Entrepreneurship Development and Management",
               credits: 4,
             },
-           // { subject: "Psychology", credits: 2 },
+            // { subject: "Psychology", credits: 2 },
             //{ subject: "Soft Skills and Personal development", credits: 2 },
           ],
           "Semester 4": [
@@ -367,7 +432,7 @@
             { subject: "Visual Programming I", credits: 4 },
             { subject: "Web Programming", credits: 6 },
             { subject: "Computer Networks", credits: 3 },
-           // { subject: "Communication Skills in English II", credits: 3 },
+            // { subject: "Communication Skills in English II", credits: 3 },
           ],
           "Semester 3": [
             { subject: "Web Technology and Applications", credits: 4 },
@@ -440,6 +505,7 @@
       };
 
       const semesterGPAs = [];
+      let data = [];
 
       function populateDegreePrograms() {
         // Populate the degree program select options
@@ -532,11 +598,35 @@
         let totalCredits = 0;
         let totalGradePoints = 0;
 
+        const semesterName = document.getElementById("semester").value;
+        const degreeProgramName =
+          document.getElementById("degree-program").value;
+
+        // If the degree program and semester do not exist in the data object, add them
+
+        if (!data[semesterName]) {
+          data["degreeProgramName"] = degreeProgramName;
+          data["FGPA"] = 0;
+          data[semesterName] = {
+            SGPA: 0,
+            Grades: [],
+          };
+        }
+
         for (const gradeSelect of gradeSelects) {
           const selectedGrade = gradeSelect.value;
           const creditsCell = gradeSelect.parentElement.previousElementSibling;
           const credits = parseInt(creditsCell.textContent, 10);
           const gradeInfoObj = gradeInfo[selectedGrade];
+
+          const subjectCell = creditsCell.previousElementSibling;
+          const subjectName = subjectCell.textContent;
+
+          // Add the subject and grade to the Grades array
+          data[semesterName]["Grades"].push({
+            subject: subjectName,
+            Grade: selectedGrade,
+          });
 
           if (!isNaN(credits) && gradeInfoObj) {
             const gradePoint = gradeInfoObj.gradePoint;
@@ -546,7 +636,9 @@
         }
 
         const sgpa =
-          totalCredits === 0 ? 0.0 : (totalGradePoints / totalCredits).toFixed(2);
+          totalCredits === 0
+            ? 0.0
+            : (totalGradePoints / totalCredits).toFixed(2);
         document.getElementById("sgpa").textContent = sgpa;
 
         // Update the semester SGPA for the current semester
@@ -561,8 +653,13 @@
             : (totalSGPA / semesterGPAs.length).toFixed(2);
         document.getElementById("fgpa").textContent = fgpa;
 
+        data[semesterName]["SGPA"] = sgpa;
+        // FGPA calculation depends on your specific rules
+        data["FGPA"] = fgpa; // Placeholder
+
         // Update the semester summary
         updateSemesterSummary();
+        console.log(data);
       }
 
       function updateSemesterSummary() {
