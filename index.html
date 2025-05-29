@@ -52,53 +52,47 @@
         >
           Download Data
         </button>
+        <!-- Export/Import selections buttons -->
+        <button id="export-selections" class="btn btn-secondary mt-2">Export Selections</button>
+        <button id="import-selections-btn" class="btn btn-secondary mt-2">Import Selections</button>
+        <input type="file" id="import-selections" accept="application/json" style="display:none" />
       </div>
       <script>
         function convertJSONtoCSV(jsonData) {
-          let csvContent = "data:text/csv;charset=utf-8,";
+  let csvContent = "data:text/csv;charset=utf-8,";
 
-          // Header
-          csvContent += "Semester,SGPA,Subject,Grade\n";
+  // Header
+  csvContent += "Semester,SGPA,Subject,Grade\n";
 
-          // Initialize variables to track semester and SGPA
-          let currentSemester = "";
-          let currentSGPA = "";
+  // Iterate through semesters
+  Object.keys(jsonData).forEach((semester) => {
+    if (semester !== "degreeProgramName" && semester !== "FGPA") {
+      // Get SGPA for the semester
+      const sgpa = jsonData[semester]["SGPA"];
+      // Only include selected subjects
+      const selectedCourses = jsonData[semester]["Grades"].filter(course => course.checked !== false);
+      selectedCourses.forEach((course, index) => {
+        const rowSemester = index === 0 ? semester : "";
+        const rowSGPA = index === 0 ? sgpa : "";
+        csvContent += `${rowSemester},${rowSGPA},${course.subject},${course.Grade}\n`;
+      });
+    }
+  });
 
-          // Iterate through semesters
-          Object.keys(jsonData).forEach((semester) => {
-            if (semester !== "degreeProgramName" && semester !== "FGPA") {
-              // Get SGPA for the semester
-              const sgpa = jsonData[semester]["SGPA"];
+  // Add FGPA
+  const fgpa = jsonData["FGPA"];
+  csvContent += `FGPA,,,${fgpa}\n`;
 
-              // Iterate through subjects and grades
-              jsonData[semester]["Grades"].forEach((course, index) => {
-                // Only include semester and SGPA when processing the first subject of each semester
-                if (index === 0 || semester !== currentSemester) {
-                  csvContent += `${semester},${sgpa},${course.subject},${course.Grade}\n`;
-                  currentSemester = semester;
-                  currentSGPA = sgpa;
-                } else {
-                  // For other subjects in the same semester, merge cells for semester and SGPA
-                  csvContent += `,,${course.subject},${course.Grade}\n`;
-                }
-              });
-            }
-          });
+  // Create a download link
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement("a");
+  link.setAttribute("href", encodedUri);
+  link.setAttribute("download", "grades.csv");
+  document.body.appendChild(link);
 
-          // Add FGPA
-          const fgpa = jsonData["FGPA"];
-          csvContent += `FGPA,,${fgpa}\n`;
-
-          // Create a download link
-          const encodedUri = encodeURI(csvContent);
-          const link = document.createElement("a");
-          link.setAttribute("href", encodedUri);
-          link.setAttribute("download", "grades.csv");
-          document.body.appendChild(link);
-
-          // Trigger the download
-          link.click();
-        }
+  // Trigger the download
+  link.click();
+}
       </script>
       <div class="form-group">
         <label for="degree-program">Select Degree Program:</label>
@@ -114,6 +108,7 @@
       <table class="table">
         <thead>
           <tr>
+            <th>Select</th>
             <th>Subject</th>
             <th>Credits</th>
             <th>Grade</th>
@@ -318,7 +313,7 @@
             { subject: "Visual Programming I", credits: 4 },
             { subject: "Web Programming", credits: 6 },
             { subject: "Computer Networks", credits: 3 },
-            //{ subject: "Communication Skills in English II", credits: 3 },
+            { subject: "Communication Skills in English II", credits: 3 },
           ],
           "Semester 3": [
             { subject: "Web Technology and Applications", credits: 4 },
@@ -331,8 +326,8 @@
               subject: "Entrepreneurship Development and Management",
               credits: 4,
             },
-            //{ subject: "Psychology", credits: 2 },
-            //{ subject: "Soft Skills and Personal Development", credits: 2 },
+            { subject: "Psychology", credits: 2 },
+            { subject: "Soft Skills and Personal Development", credits: 2 },
           ],
           "Semester 4": [
             { subject: "Mobile Application Development", credits: 4 },
@@ -346,8 +341,8 @@
             },
             { subject: "UX Engineering", credits: 2 },
             { subject: "Research Methodology", credits: 3 },
-            //{ subject: "Meditation & Stress Management", credits: 2 },
-            //{ subject: "Energy Management in IT Environment", credits: 2 },
+            { subject: "Meditation & Stress Management", credits: 2 },
+            { subject: "Energy Management in IT Environment", credits: 2 },
           ],
           "Semester 5": [
             { subject: "Work Based / Industrial Training", credits: 14 },
@@ -366,8 +361,8 @@
             },
             { subject: "Software Project Management", credits: 4 },
             { subject: "Enterprise Application Development", credits: 4 },
-            //{ subject: "Photography", credits: 2 },
-            //{ subject: "Occupational Health and Safety", credits: 2 },
+            { subject: "Photography", credits: 2 },
+            { subject: "Occupational Health and Safety", credits: 2 },
             { subject: "Game Development and Programming", credits: 4 },
             { subject: "Digital Marketing", credits: 3 },
             {
@@ -385,7 +380,7 @@
             { subject: "Data Communication and Networks", credits: 3 },
             { subject: "Database Design", credits: 3 },
             { subject: "Internet Technologies", credits: 4 },
-            //{ subject: "Communication Skills in English I", credits: 3 },
+            { subject: "Communication Skills in English I", credits: 3 },
           ],
           "Semester 2": [
             { subject: "Operating Systems", credits: 2 },
@@ -396,7 +391,7 @@
             { subject: "Visual Programming I", credits: 4 },
             { subject: "Web Programming", credits: 6 },
             { subject: "Computer Networks", credits: 3 },
-            //{ subject: "Communication Skills in English II", credits: 3 },
+            { subject: "Communication Skills in English II", credits: 3 },
           ],
           "Semester 3": [
             { subject: "Web Technology and Applications", credits: 4 },
@@ -413,8 +408,8 @@
               subject: "Entrepreneurship Development and Management",
               credits: 4,
             },
-            // { subject: "Psychology", credits: 2 },
-            //{ subject: "Soft Skills and Personal development", credits: 2 },
+             { subject: "Psychology", credits: 2 },
+            { subject: "Soft Skills and Personal development", credits: 2 },
           ],
           "Semester 4": [
             { subject: "Mobile Application Development", credits: 4 },
@@ -432,8 +427,8 @@
             },
             { subject: "Multimedia Product Development", credits: 6 },
             { subject: "Research Methodology", credits: 3 },
-            //{ subject: "Meditation & Stress Management", credits: 2 },
-            //{ subject: "Energy Management in IT Environment", credits: 2 },
+            { subject: "Meditation & Stress Management", credits: 2 },
+            { subject: "Energy Management in IT Environment", credits: 2 },
           ],
           "Semester 5": [
             { subject: "Work Based / Industrial Training", credits: 14 },
@@ -451,8 +446,8 @@
             },
             { subject: "Multimedia Data Processing", credits: 4 },
             { subject: "Digital Marketing", credits: 3 },
-            //{ subject: "Photography", credits: 2 },
-            //{ subject: "Occupational Health and Safety", credits: 2 },
+            { subject: "Photography", credits: 2 },
+            { subject: "Occupational Health and Safety", credits: 2 },
             { subject: "Game Development and Programming", credits: 4 },
             { subject: "Intelligent Systems", credits: 4 },
             {
@@ -471,7 +466,7 @@
             { subject: "Data Communication and Networks", credits: 3 },
             { subject: "Database Design", credits: 3 },
             { subject: "Internet Technologies", credits: 4 },
-            //{ subject: "Communication Skills in English I", credits: 3 },
+            { subject: "Communication Skills in English I", credits: 3 },
           ],
           "Semester 2": [
             { subject: "Operating Systems", credits: 2 },
@@ -495,8 +490,8 @@
               subject: "Entrepreneurship Development and Management",
               credits: 4,
             },
-            //{ subject: "Psychology", credits: 2 },
-            //{ subject: "Soft Skills and Personal development", credits: 2 },
+            { subject: "Psychology", credits: 2 },
+            { subject: "Soft Skills and Personal development", credits: 2 },
           ],
           "Semester 4": [
             { subject: "Mobile Application Development", credits: 4 },
@@ -507,8 +502,8 @@
             { subject: "Network Programming", credits: 4 },
             { subject: "IoT Device Programming", credits: 3 },
             { subject: "Research Methodology", credits: 3 },
-            //{ subject: "Meditation & Stress Management", credits: 2 },
-            //{ subject: "Energy Management in IT Environment", credits: 2 },
+            { subject: "Meditation & Stress Management", credits: 2 },
+            { subject: "Energy Management in IT Environment", credits: 2 },
           ],
           "Semester 5": [
             { subject: "Work Based / Industrial Training", credits: 14 },
@@ -528,8 +523,8 @@
             { subject: "Digital Marketing", credits: 3 },
             { subject: "Enterprise Resource Planning Systems", credits: 4 },
             { subject: "Intelligent Systems", credits: 4 },
-            //{ subject: "Photography", credits: 2 },
-            //{ subject: "Occupational Health and Safety", credits: 2 },
+            { subject: "Photography", credits: 2 },
+            { subject: "Occupational Health and Safety", credits: 2 },
             {
               subject: "Final Year Project (Network Development Project)",
               credits: 12,
@@ -611,11 +606,39 @@
         const semester = document.getElementById("semester").value;
         const subjectList = subjectsAndCredits[program][semester];
         const tbody = document.getElementById("subject-list");
-
         tbody.innerHTML = "";
+
+        // Retrieve saved grades and checkbox states for this semester
+        const savedGrades = (data[semester] && data[semester]["Grades"]) || [];
+        // Map for quick lookup
+        const savedMap = {};
+        for (const entry of savedGrades) {
+          savedMap[entry.subject] = entry;
+        }
 
         for (const subjectData of subjectList) {
           const row = document.createElement("tr");
+          // Add checkbox cell
+          const checkboxCell = document.createElement("td");
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          // Default checked, but restore if saved
+          checkbox.checked = savedMap[subjectData.subject]?.checked !== false;
+          checkbox.classList.add("subject-checkbox");
+          checkbox.addEventListener("change", function () {
+            // Dim subject and disable grade select if unchecked
+            if (!checkbox.checked) {
+              subjectCell.classList.add("text-muted");
+              gradeSelect.disabled = true;
+            } else {
+              subjectCell.classList.remove("text-muted");
+              gradeSelect.disabled = false;
+            }
+            calculateSGPA();
+          });
+          checkboxCell.appendChild(checkbox);
+          row.appendChild(checkboxCell);
+
           const subjectCell = document.createElement("td");
           subjectCell.textContent = subjectData.subject;
           const creditsCell = document.createElement("td");
@@ -632,8 +655,17 @@
             option.textContent = grade;
             gradeSelect.appendChild(option);
           }
-
+          // Restore saved grade if available
+          if (savedMap[subjectData.subject]?.Grade) {
+            gradeSelect.value = savedMap[subjectData.subject].Grade;
+          }
           gradeCell.appendChild(gradeSelect);
+
+          // Initial dim/disable state
+          if (checkbox.checked === false) {
+            subjectCell.classList.add("text-muted");
+            gradeSelect.disabled = true;
+          }
 
           row.appendChild(subjectCell);
           row.appendChild(creditsCell);
@@ -644,16 +676,14 @@
 
       function calculateSGPA() {
         // Calculate and update the SGPA and FGPA based on selected grades
-        const gradeSelects = document.querySelectorAll(".grade-select");
+        const subjectRows = document.querySelectorAll("#subject-list tr");
         let totalCredits = 0;
         let totalGradePoints = 0;
 
         const semesterName = document.getElementById("semester").value;
-        const degreeProgramName =
-          document.getElementById("degree-program").value;
+        const degreeProgramName = document.getElementById("degree-program").value;
 
         // If the degree program and semester do not exist in the data object, add them
-
         if (!data[semesterName]) {
           data["degreeProgramName"] = degreeProgramName;
           data["FGPA"] = 0;
@@ -662,22 +692,26 @@
             Grades: [],
           };
         }
+        // Clear previous grades
+        data[semesterName]["Grades"] = [];
 
-        for (const gradeSelect of gradeSelects) {
+        for (const row of subjectRows) {
+          const checkbox = row.querySelector(".subject-checkbox");
+          const subjectCell = row.children[1];
+          const creditsCell = row.children[2];
+          const gradeCell = row.children[3];
+          const gradeSelect = gradeCell.querySelector(".grade-select");
           const selectedGrade = gradeSelect.value;
-          const creditsCell = gradeSelect.parentElement.previousElementSibling;
           const credits = parseInt(creditsCell.textContent, 10);
           const gradeInfoObj = gradeInfo[selectedGrade];
-
-          const subjectCell = creditsCell.previousElementSibling;
           const subjectName = subjectCell.textContent;
-
-          // Add the subject and grade to the Grades array
+          // Save the subject, grade, and checked state
           data[semesterName]["Grades"].push({
             subject: subjectName,
             Grade: selectedGrade,
+            checked: checkbox.checked,
           });
-
+          if (!checkbox || !checkbox.checked) continue;
           if (!isNaN(credits) && gradeInfoObj) {
             const gradePoint = gradeInfoObj.gradePoint;
             totalCredits += credits;
@@ -748,6 +782,51 @@
             : (totalSGPA / semesterGPAs.length).toFixed(2);
         document.getElementById("fgpa").textContent = fgpa;
       }
+
+      // Export selections as JSON
+function exportSelections() {
+  const exportData = JSON.stringify(data, null, 2);
+  const blob = new Blob([exportData], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'gpa_selections.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// Import selections from JSON
+function importSelectionsFromFile(file) {
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const imported = JSON.parse(e.target.result);
+      if (typeof imported === 'object' && imported !== null) {
+        data = imported;
+        updateSubjectList();
+        calculateSGPA();
+        alert('Selections imported successfully!');
+      } else {
+        alert('Invalid file format.');
+      }
+    } catch (err) {
+      alert('Error reading file.');
+    }
+  };
+  reader.readAsText(file);
+}
+
+document.getElementById('export-selections').addEventListener('click', exportSelections);
+document.getElementById('import-selections-btn').addEventListener('click', function() {
+  document.getElementById('import-selections').click();
+});
+document.getElementById('import-selections').addEventListener('change', function(e) {
+  if (e.target.files && e.target.files[0]) {
+    importSelectionsFromFile(e.target.files[0]);
+  }
+});
 
       // Initial population and event listeners
       populateDegreePrograms();
