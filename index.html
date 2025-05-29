@@ -105,6 +105,8 @@
       </div>
 
       <h2>Subjects and Grades</h2>
+      <!-- Replace Uncheck All checkbox with a small button above the subject list -->
+      <button id="uncheck-all-subjects" class="btn btn-sm btn-outline-secondary mb-2">Uncheck All Subjects</button>
       <table class="table">
         <thead>
           <tr>
@@ -550,7 +552,7 @@
       };
 
       const semesterGPAs = [];
-      let data = [];
+      let data = {};
 
       function populateDegreePrograms() {
         // Populate the degree program select options
@@ -601,78 +603,94 @@
       }
 
       function updateSubjectList() {
-        // Update the list of subjects and credits based on the selected degree program and semester
-        const program = document.getElementById("degree-program").value;
-        const semester = document.getElementById("semester").value;
-        const subjectList = subjectsAndCredits[program][semester];
-        const tbody = document.getElementById("subject-list");
-        tbody.innerHTML = "";
+  // Update the list of subjects and credits based on the selected degree program and semester
+  const program = document.getElementById("degree-program").value;
+  const semester = document.getElementById("semester").value;
+  const subjectList = subjectsAndCredits[program][semester];
+  const tbody = document.getElementById("subject-list");
+  tbody.innerHTML = "";
 
-        // Retrieve saved grades and checkbox states for this semester
-        const savedGrades = (data[semester] && data[semester]["Grades"]) || [];
-        // Map for quick lookup
-        const savedMap = {};
-        for (const entry of savedGrades) {
-          savedMap[entry.subject] = entry;
-        }
+  // Retrieve saved grades and checkbox states for this semester
+  const savedGrades = (data[semester] && data[semester]["Grades"]) || [];
+  // Map for quick lookup
+  const savedMap = {};
+  for (const entry of savedGrades) {
+    savedMap[entry.subject] = entry;
+  }
 
-        for (const subjectData of subjectList) {
-          const row = document.createElement("tr");
-          // Add checkbox cell
-          const checkboxCell = document.createElement("td");
-          const checkbox = document.createElement("input");
-          checkbox.type = "checkbox";
-          // Default checked, but restore if saved
-          checkbox.checked = savedMap[subjectData.subject]?.checked !== false;
-          checkbox.classList.add("subject-checkbox");
-          checkbox.addEventListener("change", function () {
-            // Dim subject and disable grade select if unchecked
-            if (!checkbox.checked) {
-              subjectCell.classList.add("text-muted");
-              gradeSelect.disabled = true;
-            } else {
-              subjectCell.classList.remove("text-muted");
-              gradeSelect.disabled = false;
-            }
-            calculateSGPA();
-          });
-          checkboxCell.appendChild(checkbox);
-          row.appendChild(checkboxCell);
-
-          const subjectCell = document.createElement("td");
-          subjectCell.textContent = subjectData.subject;
-          const creditsCell = document.createElement("td");
-          creditsCell.textContent = subjectData.credits;
-          const gradeCell = document.createElement("td");
-          const gradeSelect = document.createElement("select");
-          gradeSelect.name = `grade-${subjectData.subject}`;
-          gradeSelect.classList.add("grade-select");
-          gradeSelect.addEventListener("change", calculateSGPA);
-
-          for (const grade in gradeInfo) {
-            const option = document.createElement("option");
-            option.value = grade;
-            option.textContent = grade;
-            gradeSelect.appendChild(option);
-          }
-          // Restore saved grade if available
-          if (savedMap[subjectData.subject]?.Grade) {
-            gradeSelect.value = savedMap[subjectData.subject].Grade;
-          }
-          gradeCell.appendChild(gradeSelect);
-
-          // Initial dim/disable state
-          if (checkbox.checked === false) {
-            subjectCell.classList.add("text-muted");
-            gradeSelect.disabled = true;
-          }
-
-          row.appendChild(subjectCell);
-          row.appendChild(creditsCell);
-          row.appendChild(gradeCell);
-          tbody.appendChild(row);
-        }
+  for (const subjectData of subjectList) {
+    const row = document.createElement("tr");
+    // Add checkbox cell
+    const checkboxCell = document.createElement("td");
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    // Default checked, but restore if saved
+    checkbox.checked = savedMap[subjectData.subject]?.checked !== false;
+    checkbox.classList.add("subject-checkbox");
+    checkbox.addEventListener("change", function () {
+      // Dim subject and disable grade select if unchecked
+      if (!checkbox.checked) {
+        subjectCell.classList.add("text-muted");
+        creditsCell.classList.add("text-muted"); // Dim credits
+        gradeSelect.disabled = true;
+      } else {
+        subjectCell.classList.remove("text-muted");
+        creditsCell.classList.remove("text-muted"); // Restore credits
+        gradeSelect.disabled = false;
       }
+      calculateSGPA();
+    });
+    checkboxCell.appendChild(checkbox);
+    row.appendChild(checkboxCell);
+
+    const subjectCell = document.createElement("td");
+    subjectCell.textContent = subjectData.subject;
+    const creditsCell = document.createElement("td");
+    creditsCell.textContent = subjectData.credits;
+    const gradeCell = document.createElement("td");
+    const gradeSelect = document.createElement("select");
+    gradeSelect.name = `grade-${subjectData.subject}`;
+    gradeSelect.classList.add("grade-select");
+    gradeSelect.addEventListener("change", calculateSGPA);
+
+    for (const grade in gradeInfo) {
+      const option = document.createElement("option");
+      option.value = grade;
+      option.textContent = grade;
+      gradeSelect.appendChild(option);
+    }
+    // Restore saved grade if available
+    if (savedMap[subjectData.subject]?.Grade) {
+      gradeSelect.value = savedMap[subjectData.subject].Grade;
+    }
+    gradeCell.appendChild(gradeSelect);
+
+    // Initial dim/disable state
+    if (checkbox.checked === false) {
+      subjectCell.classList.add("text-muted");
+      creditsCell.classList.add("text-muted"); // Dim credits
+      gradeSelect.disabled = true;
+    }
+
+    row.appendChild(subjectCell);
+    row.appendChild(creditsCell);
+    row.appendChild(gradeCell);
+    tbody.appendChild(row);
+  }
+
+  // Add event for Uncheck All Subjects checkbox
+  const uncheckAll = document.getElementById('uncheck-all-subjects');
+  if (uncheckAll) {
+    uncheckAll.checked = false;
+    uncheckAll.addEventListener('change', function() {
+      const checkboxes = document.querySelectorAll('.subject-checkbox');
+      checkboxes.forEach(cb => {
+        cb.checked = !uncheckAll.checked;
+        cb.dispatchEvent(new Event('change'));
+      });
+    });
+  }
+}
 
       function calculateSGPA() {
         // Calculate and update the SGPA and FGPA based on selected grades
@@ -849,6 +867,19 @@ document.getElementById('import-selections').addEventListener('change', function
       for (const gradeSelect of gradeSelects) {
         gradeSelect.addEventListener("change", calculateSGPA);
       }
+
+      // Event listener for Uncheck All button
+      const uncheckAllBtn = document.getElementById('uncheck-all-subjects');
+      uncheckAllBtn.addEventListener('click', function() {
+        const subjectRows = document.querySelectorAll("#subject-list tr");
+        subjectRows.forEach(row => {
+          const checkbox = row.querySelector(".subject-checkbox");
+          if (checkbox.checked) {
+            checkbox.checked = false;
+            checkbox.dispatchEvent(new Event('change'));
+          }
+        });
+      });
     </script>
   </body>
 </html>
